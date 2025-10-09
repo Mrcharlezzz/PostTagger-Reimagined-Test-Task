@@ -1,0 +1,70 @@
+# PYTHON BASICS
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+build/
+dist/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+pytest_cache/
+.cache/
+.pytest_cache/
+
+# ENVIRONMENT & LOCAL SETTINGS
+.env
+.env.*
+!*.example
+
+# EDITOR / IDE / OS NOISE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# DOCKER / COMPOSE / RUNTIME
+docker-compose.override.yml
+*.pid
+*.log
+*.pid.lock
+tmp/
+logs/
+data/
+redis-data/
+celerybeat-schedule
+
+# DEPENDENCY MANAGEMENT
+poetry.lock
+Pipfile
+Pipfile.lock
+__pypackages__/
+
+# TEST OUTPUT / LINT REPORTS
+reports/
+test-results.xml
+coverage.xml
+*.coverage
+*.log
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+ruff_cache/
+.mruff_cache/
+
+# LOCAL FILES
+scratch/
+sandbox/
+notes.txt
