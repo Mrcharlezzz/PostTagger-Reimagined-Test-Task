@@ -50,7 +50,7 @@ def calculate_pi(n: int = Query(..., ge=1, le=_settings.MAX_DIGITS,description="
     description=(
         "Poll the status of a Celery task. Returns a JSON with keys:\n"
         "- state: 'PROGRESS' or 'FINISHED'\n"
-        "- progress: 0..1 (float)\n"
+        "- progress: value from 0 to 1 (float)\n"
         "- message: optional error message\n"
         "- result: final value or Null\n\n"
         "Example: {'state':'PROGRESS','progress':0.25,'message':Null, 'result':Null}\n"

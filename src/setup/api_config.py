@@ -23,7 +23,6 @@ def _config(binder: inject.Binder) -> None:
     """
     Bind domain interfaces to concrete implementations.
     """
-    # If you want singleton semantics, bind an instance (not a class):
     binder.bind(TaskManagerRepository, CeleryTaskManager())
 
 

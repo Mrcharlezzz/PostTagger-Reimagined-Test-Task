@@ -38,18 +38,3 @@ def to_status_dto(async_result : AsyncResult) -> StatusDTO:
             message=f"Mapping error: {e.errors()}",
             result=None,
         )
-
-"""
-TODO
-
-
-implement task missing logic
-
-check not found task
-
-
-check not found task
-
-try to decouple worker import from docker compose
-
-"""
