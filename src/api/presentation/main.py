@@ -9,7 +9,7 @@ configure_di()
 app = FastAPI(
     title=_settings.APP_NAME,
     version=_settings.APP_VERSION,
-    description="Async task API (compute π) with progress polling",
+    description="Async task API with progress polling",
 )
 
 # Instantiate services AFTER configure_di()
