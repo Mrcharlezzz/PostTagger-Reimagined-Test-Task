@@ -10,7 +10,6 @@ Test Task project for JetBrains internship application.
 - [Running With Docker Compose](#running-with-docker-compose)
 - [Available Services & Endpoints](#available-services--endpoints)
 - [Task Workflow](#task-workflow)
-- [Testing](#testing)
 
 ## Overview
 This project exposes an HTTP API that allows clients to enqueue long-running jobs (e.g., computing π) and poll for their status. Celery is used as the task queue, Redis serves as broker/backend, and FastAPI provides the HTTP layer. The service is designed with a scalable architecture, allowing new background tasks to be easily added.
@@ -24,10 +23,7 @@ This project exposes an HTTP API that allows clients to enqueue long-running job
 - **Config (src/setup)** - Configuration files
 
 ## Prerequisites
-- Python 3.11+
-- Redis (local instance or Docker)
-- [Pipenv/virtualenv] or equivalent for managing dependencies
-- Docker & Docker Compose (optional, for containerized setup)
+- Docker for containerized setup
 
 ## Configuration
 Environment variables are loaded from `.env`. Copy `.env.example` and adjust as needed:
