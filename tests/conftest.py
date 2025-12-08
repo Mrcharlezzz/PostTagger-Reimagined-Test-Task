@@ -7,8 +7,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from src.api.application.dtos import StatusDTO
 from src.api.domain.exceptions import TaskNotFoundError
-from src.api.domain.models import StatusDTO
 from src.api.domain.repositories import TaskManagerRepository
 
 
@@ -19,12 +19,12 @@ class StubTaskManager(TaskManagerRepository):
         self.enqueued: list[tuple[str, dict]] = []
         self.status_by_id: dict[str, StatusDTO] = {}
 
-    def enqueue(self, task_name: str, payload: dict) -> str:
+    async def enqueue(self, task_name: str, payload: dict) -> str:
         task_id = f"{task_name}-{len(self.enqueued) + 1}"
         self.enqueued.append((task_name, payload))
         return task_id
 
-    def get_status(self, task_id: str) -> StatusDTO:
+    async def get_status(self, task_id: str) -> StatusDTO:
         if task_id not in self.status_by_id:
             raise TaskNotFoundError(task_id)
         return self.status_by_id[task_id]

@@ -7,8 +7,11 @@ class StatusDTO(BaseModel):
     """
     Represents the status of a Celery task.
     """
+
     task_id: str = Field(..., description="Unique identifier of the task")
-    state: str = Field(..., description="Celery task state: PENDING, STARTED, PROGRESS, SUCCESS, FAILURE")
+    state: str = Field(
+        ..., description="Celery task state: PENDING, STARTED, PROGRESS, SUCCESS, FAILURE"
+    )
     progress: float | None = Field(
         None,
         ge=0.0,

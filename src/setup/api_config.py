@@ -1,5 +1,6 @@
 
 import inject
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 from src.api.domain.repositories import TaskManagerRepository
@@ -7,13 +8,11 @@ from src.api.infrastructure.celery.celery_task_manager import CeleryTaskManager
 
 
 class ApiSettings(BaseSettings):
-    MAX_DIGITS: int
-    APP_NAME: str
-    APP_VERSION: str
+    MAX_DIGITS: int = 2000
+    APP_NAME: str = "posttager-pi"
+    APP_VERSION: str = "0.1.0"
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = ConfigDict(env_file=".env", extra="ignore")
         
 
 def get_api_settings() -> ApiSettings:

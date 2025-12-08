@@ -26,15 +26,9 @@ This project exposes an HTTP API that allows clients to enqueue long-running job
 - Docker for containerized setup
 
 ## Configuration
-Environment variables are loaded from `.env`. Copy `.env.example` and adjust as needed:
-```bash
-cp .env.example .env
-```
-Key settings:
-- `APP_NAME`, `APP_VERSION`
-- `REDIS_URL` — broker/backend location
-- `MAX_DIGITS` — upper bound for `calculate_pi`
-- `RESULT_TTL_SECONDS`, `SLEEP_PER_DIGIT_SEC`, `ROUNDING_POLICY`
+Defaults for the API name/version, Redis URL, max digits, and worker pacing are baked into
+the settings classes (`src/setup`). You can still override any of them by creating a `.env`
+file with the relevant variables (see `src/setup/*.py` for names).
 
 
 ## Running With Docker Compose
@@ -59,4 +53,3 @@ Services started:
 2. API enqueues `compute_pi` via Celery.
 3. Worker updates progress using `update_state` and ultimately stores the result.
 4. Client polls `/check_progress` until `state` is `SUCCESS`.
-

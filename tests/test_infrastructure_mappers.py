@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.api.domain.models import StatusDTO
+from src.api.application.dtos import StatusDTO
 from src.api.infrastructure.mappers import to_status_dto
 
 

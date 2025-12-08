@@ -3,9 +3,9 @@ import logging
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from src.api.application.dtos import StatusDTO
 from src.api.application.services import ProgressService, TaskService
 from src.api.domain.exceptions import TaskNotFoundError
-from src.api.domain.models import StatusDTO
 from src.setup.api_config import get_api_settings
 
 router = APIRouter(tags=["tasks"])
@@ -31,12 +31,12 @@ class EnqueueResponse(BaseModel):
         }
     },
 )
-def calculate_pi(n: int = Query(..., ge=1, le=_settings.MAX_DIGITS,description="Number of digits after decimal")):
+async def calculate_pi(n: int = Query(..., ge=1, le=_settings.MAX_DIGITS,description="Number of digits after decimal")):
     """
     Queues the `compute_pi` task.
     """
     try:
-        task_id = _task_service.push_task("compute_pi", {"digits": n})
+        task_id = await _task_service.push_task("compute_pi", {"digits": n})
         return EnqueueResponse(task_id=task_id)
     except Exception as exc:
         logger.exception("Failed to enqueue task compute_pi: %s", exc)
@@ -64,12 +64,12 @@ def calculate_pi(n: int = Query(..., ge=1, le=_settings.MAX_DIGITS,description="
         },
     },
 )
-def check_progress(task_id: str = Query(..., description="Celery task id")):
+async def check_progress(task_id: str = Query(..., description="Celery task id")):
     """
     Reads the Celery result backend for the given task id.
     """
     try:
-        status = _progress_service.get_progress(task_id)
+        status = await _progress_service.get_progress(task_id)
         return status
     except TaskNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

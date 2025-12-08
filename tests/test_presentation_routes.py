@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.api.domain.models import StatusDTO
+from src.api.application.dtos import StatusDTO
 
 
 def test_calculate_pi_rejects_zero(api_client):

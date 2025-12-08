@@ -1,8 +1,8 @@
 from celery.result import AsyncResult
 from pydantic import ValidationError
 
+from src.api.application.dtos import StatusDTO
 from src.api.domain.exceptions import TaskNotFoundError
-from src.api.domain.models import StatusDTO
 
 
 def to_status_dto(async_result : AsyncResult) -> StatusDTO:
