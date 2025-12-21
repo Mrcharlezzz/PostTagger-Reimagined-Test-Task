@@ -7,9 +7,15 @@ from pydantic import BaseModel, Field
 class TaskMetadata(BaseModel):
     """Common metadata about a task lifecycle."""
 
-    created_at: datetime
-    started_at: datetime | None = None
-    finished_at: datetime | None = None
+    created_at: datetime | None = Field(
+        default=None, description="Timestamp when the task was created."
+    )
+    started_at: datetime | None = Field(
+        default=None, description="Timestamp when the task started running."
+    )
+    finished_at: datetime | None = Field(
+        default=None, description="Timestamp when the task finished."
+    )
     custom: dict[str, Any] | None = Field(
         default=None, description="Task-specific metadata."
     )

@@ -1,14 +1,12 @@
-from datetime import datetime
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.api.domain.models.task_progress import TaskProgress
 from src.api.domain.models.task_state import TaskState
 
 
 class TaskStatus(BaseModel):
-    state: TaskState
-    progress: TaskProgress
-    message: str | None = None
-    started_at: datetime | None = None
-    finished_at: datetime | None = None
+    state: TaskState = Field(description="Current lifecycle state of the task.")
+    progress: TaskProgress = Field(description="Progress information for the task.")
+    message: str | None = Field(
+        default=None, description="Optional status or error message."
+    )
