@@ -1,6 +1,6 @@
 from celery.result import AsyncResult
 
-from src.api.domain.exceptions import TaskNotFoundError, TaskResultUnavailableError
+from src.api.domain.exceptions import TaskNotFoundError
 from src.api.domain.models.task_result import TaskResult, TaskResultMetadata
 from src.api.domain.models.task_progress import TaskProgress
 from src.api.domain.models.task_state import TaskState
@@ -53,10 +53,15 @@ class CeleryMapper:
             else TaskProgress()
         )
 
+        started_at = meta.get("started_at") if isinstance(meta, dict) else None
+        finished_at = meta.get("finished_at") if isinstance(meta, dict) else None
+
         return TaskStatus(
             state=CeleryMapper.map_state(async_result),
             progress=progress,
             message=CeleryMapper.map_message(info),
+            started_at=started_at,
+            finished_at=finished_at,
         )
 
     @staticmethod
@@ -65,9 +70,6 @@ class CeleryMapper:
             raise TaskNotFoundError(async_result.id)
 
         state = CeleryMapper.map_state(async_result)
-        if state not in {TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED}:
-            raise TaskResultUnavailableError(async_result.id, state.value)
-
         meta = CeleryMapper.map_meta(async_result)
         result_payload = async_result.result if async_result.result is not None else meta or None
 
@@ -84,11 +86,18 @@ class CeleryMapper:
             trace_id=meta.get("trace_id") if isinstance(meta, dict) else None,
         )
 
+        progress_value = meta.get("progress") if isinstance(meta, dict) else None
+        progress = (
+            TaskProgress(percentage=progress_value)
+            if progress_value is not None
+            else TaskProgress()
+        )
+
         return TaskResult(
             task_id=async_result.id,
             status=TaskStatus(
                 state=state,
-                progress=TaskProgress(),
+                progress=progress,
                 message=CeleryMapper.map_message(async_result.info),
                 started_at=started_at,
                 finished_at=finished_at,

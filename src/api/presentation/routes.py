@@ -10,7 +10,7 @@ from src.api.domain.models import (
     TaskResult,
     TaskType,
 )
-from src.api.domain.exceptions import TaskNotFoundError, TaskResultUnavailableError
+from src.api.domain.exceptions import TaskNotFoundError
 from src.api.domain.models.task import Task
 from src.api.domain.models.task_status import TaskStatus
 from src.setup.api_config import get_api_settings
@@ -29,20 +29,15 @@ _result_service = ResultService()
 def get_task_service() -> TaskService:
     return TaskService()
 
-class EnqueueResponse(BaseModel):
-    task_id: str = Field(..., description="Celery task id")
-
-# EnqueueResponse is used for legacy /calculate_pi endpoint returning only task id.
-
 class CalculatePiRequest(BaseModel):
     n: int = Field(..., ge=1, le=_settings.MAX_DIGITS, description="Number of digits after decimal")
 
 
 @router.post(
     "/calculate_pi",
-    response_model=EnqueueResponse,
+    response_model=Task,
     summary="Start π calculation",
-    description="Queues an asynchronous task to compute n digits of π. Returns the Celery task id.",
+    description="Queues an asynchronous task to compute n digits of π.",
     responses={
         500: {
             "description": "Internal server error.",
@@ -55,8 +50,8 @@ async def calculate_pi(body: CalculatePiRequest):
     """
     try:
         payload = ComputePiPayload(digits=body.n)
-        task_id = await _task_service.push_task(TaskType.COMPUTE_PI, payload)
-        return EnqueueResponse(task_id=task_id)
+        task = await _task_service.create_task(TaskType.COMPUTE_PI, payload)
+        return task
     except Exception as exc:
         logger.exception("Failed to enqueue task compute_pi: %s", exc)
         raise HTTPException(status_code=500)  # noqa: B904
@@ -133,8 +128,6 @@ async def get_task_result(task_id: str = Query(..., description="Celery task id"
         result = await _result_service.get_result(task_id)
         return result
     except TaskNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except TaskResultUnavailableError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:
         logger.exception("Failed to get result for task %s: %s", task_id, exc)

@@ -28,7 +28,10 @@ def test_calculate_pi_enqueues_task_with_stub(api_client):
     response = client.post("/calculate_pi", json={"n": 3})
 
     assert response.status_code == 200
-    assert response.json() == {"task_id": "compute_pi-1"}
+    body = response.json()
+    assert body["id"] == "compute_pi-1"
+    assert body["task_type"] == "compute_pi"
+    assert body["payload"]["digits"] == 3
     assert len(stub.enqueued_tasks) == 1
     enqueued = stub.enqueued_tasks[0]
     assert enqueued.task_type == TaskType.COMPUTE_PI
