@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from src.api.domain.models.task_progress import TaskProgress
+from src.api.domain.models.task_type import TaskType
 from src.api.domain.models.task_state import TaskState
 from src.api.domain.models.task_status import TaskStatus
 
@@ -30,7 +31,7 @@ def test_calculate_pi_enqueues_task_with_stub(api_client):
     assert response.json() == {"task_id": "compute_pi-1"}
     assert len(stub.enqueued_tasks) == 1
     enqueued = stub.enqueued_tasks[0]
-    assert enqueued.task_type == "compute_pi"
+    assert enqueued.task_type == TaskType.COMPUTE_PI
     assert enqueued.payload.digits == 3
 
 
@@ -62,6 +63,8 @@ def test_check_progress_returns_status_payload(api_client):
             "percentage": 0.5,
             "phase": None,
         },
+        "started_at": None,
+        "finished_at": None,
         "message": "working",
     }
 

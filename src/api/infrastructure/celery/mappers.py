@@ -1,6 +1,7 @@
 from celery.result import AsyncResult
 
-from src.api.domain.exceptions import TaskNotFoundError
+from src.api.domain.exceptions import TaskNotFoundError, TaskResultUnavailableError
+from src.api.domain.models.task_result import TaskResult, TaskResultMetadata
 from src.api.domain.models.task_progress import TaskProgress
 from src.api.domain.models.task_state import TaskState
 from src.api.domain.models.task_status import TaskStatus
@@ -20,6 +21,8 @@ class CeleryMapper:
     def map_state(async_result: AsyncResult) -> TaskState:
         if async_result.state == "PENDING":
             raise TaskNotFoundError(async_result.id)
+        if async_result.state == "SENT":
+            return TaskState.QUEUED
         if async_result.failed():
             return TaskState.FAILED
         if async_result.successful():
@@ -54,4 +57,42 @@ class CeleryMapper:
             state=CeleryMapper.map_state(async_result),
             progress=progress,
             message=CeleryMapper.map_message(info),
+        )
+
+    @staticmethod
+    def map_result(async_result: AsyncResult) -> TaskResult:
+        if async_result.state == "PENDING":
+            raise TaskNotFoundError(async_result.id)
+
+        state = CeleryMapper.map_state(async_result)
+        if state not in {TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED}:
+            raise TaskResultUnavailableError(async_result.id, state.value)
+
+        meta = CeleryMapper.map_meta(async_result)
+        result_payload = async_result.result if async_result.result is not None else meta or None
+
+        started_at = meta.get("started_at") if isinstance(meta, dict) else None
+        finished_at = (
+            meta.get("finished_at") if isinstance(meta, dict) else async_result.date_done
+        )
+        if finished_at is None:
+            finished_at = async_result.date_done
+
+        metadata = TaskResultMetadata(
+            worker=meta.get("worker") if isinstance(meta, dict) else None,
+            queue=meta.get("queue") if isinstance(meta, dict) else None,
+            trace_id=meta.get("trace_id") if isinstance(meta, dict) else None,
+        )
+
+        return TaskResult(
+            task_id=async_result.id,
+            status=TaskStatus(
+                state=state,
+                progress=TaskProgress(),
+                message=CeleryMapper.map_message(async_result.info),
+                started_at=started_at,
+                finished_at=finished_at,
+            ),
+            data=result_payload,
+            metadata=metadata,
         )

@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 
+from src.api.domain.models.task_type import TaskType
+
 
 @dataclass(frozen=True)
 class TaskRoute:
-    task_type: str
+    task_type: TaskType
     celery_task: str
     queue: str | None = None
 
@@ -12,20 +14,20 @@ class TaskRegistry:
     """Registry mapping task types to Celery routing info."""
 
     def __init__(self) -> None:
-        self._registry: dict[str, TaskRoute] = {
-            "compute_pi": TaskRoute(
-                task_type="compute_pi",
+        self._registry: dict[TaskType, TaskRoute] = {
+            TaskType.COMPUTE_PI: TaskRoute(
+                task_type=TaskType.COMPUTE_PI,
                 celery_task="compute_pi",
                 queue=None,
             ),
-            "document_analysis": TaskRoute(
-                task_type="document_analysis",
+            TaskType.DOCUMENT_ANALYSIS: TaskRoute(
+                task_type=TaskType.DOCUMENT_ANALYSIS,
                 celery_task="document_analysis",
                 queue="doc-tasks",
             ),
         }
 
-    def route_for_task_type(self, task_type: str) -> TaskRoute:
+    def route_for_task_type(self, task_type: TaskType) -> TaskRoute:
         try:
             return self._registry[task_type]
         except KeyError as exc:

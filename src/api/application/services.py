@@ -5,8 +5,10 @@ from src.api.domain.models import (
     TaskMetadata,
     TaskPayload,
     TaskProgress,
+    TaskResult,
     TaskState,
     TaskStatus,
+    TaskType,
 )
 from src.api.domain.repositories import TaskManagerRepository
 
@@ -22,18 +24,30 @@ class ProgressService:
         status = await self._task_manager.get_status(task_name)
         return status
 
+
+class ResultService:
+    """Provides access to result data for background tasks."""
+
+    def __init__(self):
+        self._task_manager: TaskManagerRepository = inject.instance(TaskManagerRepository)
+
+    async def get_result(self, task_id: str) -> TaskResult:
+        """Return the current result payload for the task identified by ``task_id``."""
+        result = await self._task_manager.get_result(task_id)
+        return result
+
 class TaskService:
     """Handles submission of asynchronous tasks to the Celery broker."""
 
     def __init__(self):
         self._task_manager: TaskManagerRepository = inject.instance(TaskManagerRepository)
 
-    async def push_task(self, task_type: str, payload: TaskPayload) -> str:
+    async def push_task(self, task_type: TaskType, payload: TaskPayload) -> str:
         """Enqueue a task with the provided payload and return its task id."""
         task = await self.create_task(task_type, payload)
         return task.id
 
-    async def create_task(self, task_type: str, payload: TaskPayload) -> Task:
+    async def create_task(self, task_type: TaskType, payload: TaskPayload) -> Task:
         """
         Create a typed task and enqueue it via the task manager.
         """

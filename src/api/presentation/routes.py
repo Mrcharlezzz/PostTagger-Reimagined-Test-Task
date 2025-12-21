@@ -3,9 +3,14 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from src.api.application.services import ProgressService, TaskService
-from src.api.domain.models import ComputePiPayload, DocumentAnalysisPayload
-from src.api.domain.exceptions import TaskNotFoundError
+from src.api.application.services import ProgressService, ResultService, TaskService
+from src.api.domain.models import (
+    ComputePiPayload,
+    DocumentAnalysisPayload,
+    TaskResult,
+    TaskType,
+)
+from src.api.domain.exceptions import TaskNotFoundError, TaskResultUnavailableError
 from src.api.domain.models.task import Task
 from src.api.domain.models.task_status import TaskStatus
 from src.setup.api_config import get_api_settings
@@ -18,6 +23,7 @@ _settings = get_api_settings()
 
 _task_service = TaskService()
 _progress_service = ProgressService()
+_result_service = ResultService()
 
 
 def get_task_service() -> TaskService:
@@ -49,7 +55,7 @@ async def calculate_pi(body: CalculatePiRequest):
     """
     try:
         payload = ComputePiPayload(digits=body.n)
-        task_id = await _task_service.push_task("compute_pi", payload)
+        task_id = await _task_service.push_task(TaskType.COMPUTE_PI, payload)
         return EnqueueResponse(task_id=task_id)
     except Exception as exc:
         logger.exception("Failed to enqueue task compute_pi: %s", exc)
@@ -101,5 +107,35 @@ async def create_doc_task(
     """
     Enqueue a document analysis task with a typed payload.
     """
-    task = await svc.create_task("document_analysis", body)
+    task = await svc.create_task(TaskType.DOCUMENT_ANALYSIS, body)
     return task
+
+
+@router.get(
+    "/task_result",
+    response_model=TaskResult,
+    summary="Fetch task result",
+    description="Retrieve the result payload for a task id, if available.",
+    responses={
+        404: {
+            "description": "Task id not found.",
+        },
+        500: {
+            "description": "Internal server error.",
+        },
+    },
+)
+async def get_task_result(task_id: str = Query(..., description="Celery task id")):
+    """
+    Reads the Celery result backend for the given task id.
+    """
+    try:
+        result = await _result_service.get_result(task_id)
+        return result
+    except TaskNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except TaskResultUnavailableError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Failed to get result for task %s: %s", task_id, exc)
+        raise HTTPException(status_code=500)  # noqa: B904

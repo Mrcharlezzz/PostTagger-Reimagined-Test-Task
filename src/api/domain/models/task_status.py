@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from src.api.domain.models.task_progress import TaskProgress
@@ -8,3 +10,5 @@ class TaskStatus(BaseModel):
     state: TaskState
     progress: TaskProgress
     message: str | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None

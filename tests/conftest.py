@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from src.api.domain.exceptions import TaskNotFoundError
 from src.api.domain.models.task import Task
+from src.api.domain.models.task_result import TaskResult
 from src.api.domain.models.task_status import TaskStatus
 from src.api.domain.repositories import TaskManagerRepository
 
@@ -19,9 +20,10 @@ class StubTaskManager(TaskManagerRepository):
     def __init__(self) -> None:
         self.enqueued_tasks: list[Task] = []
         self.status_by_id: dict[str, TaskStatus] = {}
+        self.results_by_id: dict[str, TaskResult] = {}
 
     async def enqueue(self, task: Task) -> str:
-        task_id = f"{task.task_type}-{len(self.enqueued_tasks) + 1}"
+        task_id = f"{task.task_type.value}-{len(self.enqueued_tasks) + 1}"
         self.enqueued_tasks.append(task)
         return task_id
 
@@ -29,6 +31,11 @@ class StubTaskManager(TaskManagerRepository):
         if task_id not in self.status_by_id:
             raise TaskNotFoundError(task_id)
         return self.status_by_id[task_id]
+
+    async def get_result(self, task_id: str) -> TaskResult:
+        if task_id not in self.results_by_id:
+            raise TaskNotFoundError(task_id)
+        return self.results_by_id[task_id]
 
 
 @pytest.fixture

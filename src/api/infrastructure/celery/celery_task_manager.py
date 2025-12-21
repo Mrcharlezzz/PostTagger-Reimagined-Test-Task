@@ -5,6 +5,7 @@ import asyncio
 from celery.result import AsyncResult
 
 from src.api.domain.repositories import TaskManagerRepository
+from src.api.domain.models.task_result import TaskResult
 from src.api.infrastructure.celery.app import celery_app
 from src.api.infrastructure.celery.mappers import CeleryMapper
 from src.api.infrastructure.celery.task_registry import TaskRegistry
@@ -27,7 +28,7 @@ class CeleryTaskManager(TaskManagerRepository):
         """
         route = self._registry.route_for_task_type(task.task_type)
         message = {
-            "task_type": task.task_type,
+            "task_type": task.task_type.value,
             "payload": task.payload.model_dump(),
         }
         async_result = await asyncio.to_thread(
@@ -41,3 +42,10 @@ class CeleryTaskManager(TaskManagerRepository):
         """
         result = await asyncio.to_thread(AsyncResult, task_id, app=self._celery_app)
         return await asyncio.to_thread(CeleryMapper.map_status, result)
+
+    async def get_result(self, task_id: str) -> TaskResult:
+        """
+        Retrieve the current result payload for a task.
+        """
+        async_result = await asyncio.to_thread(AsyncResult, task_id, app=self._celery_app)
+        return await asyncio.to_thread(CeleryMapper.map_result, async_result)
