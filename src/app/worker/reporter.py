@@ -1,30 +1,42 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import asyncio
 from typing import Any
+
+import inject
+
+from src.app.domain.events.task_event import TaskEvent
+from src.app.domain.models.task_status import TaskStatus
+from src.app.domain.repositories import TaskEventPublisherRepository
 
 
 class TaskReporter:
-    """Mirror task state updates to Celery."""
+    """Publish task events to the stream."""
 
-    def __init__(self, celery_task: Any) -> None:
-        self._task = celery_task
+    def __init__(
+        self,
+        task_id: str,
+        publisher: TaskEventPublisherRepository | None = None,
+    ) -> None:
+        self._task_id = task_id
+        self._publisher = publisher or inject.instance(TaskEventPublisherRepository)
 
-    def report_progress(self, progress: float, started_at: datetime) -> None:
-        meta = {
-            "progress": progress,
-            "message": None,
-            "result": None,
-            "started_at": started_at.isoformat(),
-        }
-        self._task.update_state(state="PROGRESS", meta=meta)
+    def report_status(self, status: TaskStatus) -> None:
+        event = TaskEvent.status(self._task_id, status)
+        self._publish(event)
 
-    def report_completed(self, result: Any, started_at: datetime) -> dict:
-        finished_at = datetime.now(timezone.utc)
-        return {
-            "progress": 1.0,
-            "message": None,
-            "result": result,
-            "started_at": started_at.isoformat(),
-            "finished_at": finished_at.isoformat(),
-        }
+    def report_result(self, result_snapshot: dict[str, Any]) -> None:
+        event = TaskEvent.result(self._task_id, result_snapshot)
+        self._publish(event)
+
+    def report_result_chunk(self, chunk_id: str, data: Any, is_last: bool = False) -> None:
+        event = TaskEvent.result_chunk(self._task_id, chunk_id, data, is_last=is_last)
+        self._publish(event)
+
+    def _publish(self, event: TaskEvent) -> None:
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(self._publisher.publish(event))
+            return
+        loop.create_task(self._publisher.publish(event))

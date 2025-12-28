@@ -1,9 +1,11 @@
 import time
-from datetime import datetime, timezone
 
 from mpmath import mp
 
 from src.app.infrastructure.celery.app import celery_app
+from src.app.domain.models.task_progress import TaskProgress
+from src.app.domain.models.task_state import TaskState
+from src.app.domain.models.task_status import TaskStatus
 from src.app.worker.reporter import TaskReporter
 from src.setup.worker_config import get_worker_settings
 
@@ -21,15 +23,19 @@ def compute_pi(self, payload: dict) -> dict:
     Pi computation task.
     Simulates heavy pi calculation.
     """
-    reporter = TaskReporter(self)
+    reporter = TaskReporter(self.request.id)
     payload_data = payload["payload"]
     digits: int = payload_data["digits"]
     pi: str = get_pi(digits)
-    started_at = datetime.now(timezone.utc)
 
     for k in range(digits):
         time.sleep(_settings.SLEEP_PER_DIGIT_SEC)
         progress = (k + 1) / digits
-        reporter.report_progress(progress, started_at)
+        status = TaskStatus(
+            state=TaskState.RUNNING,
+            progress=TaskProgress(current=k + 1, total=digits, percentage=progress),
+        )
+        reporter.report_status(status)
 
-    return reporter.report_completed(pi, started_at)
+    reporter.report_result({"task_id": self.request.id, "data": pi})
+    return {"result": pi}

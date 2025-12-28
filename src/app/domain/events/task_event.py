@@ -32,7 +32,7 @@ class TaskEvent(BaseModel):
             type=EventType.TASK_STATUS,
             task_id=task_id,
             ts=datetime.now(tz=timezone.utc),
-            payload={"status": status_snapshot.model_dump()},
+            payload={"status": status_snapshot.model_dump(mode="json")},
         )
 
     @classmethod

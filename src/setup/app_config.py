@@ -4,12 +4,12 @@ from src.app.domain.repositories import StorageRepository, TaskManagerRepository
 from src.app.infrastructure.celery.repositories import CeleryTaskManager
 from src.app.infrastructure.postgres.orm import PostgresOrm
 from src.app.infrastructure.postgres.repositories import PostgresStorageRepository
-from src.setup.db_config import get_database_settings
+from src.setup.db_config import DatabaseSettings
 
 
 def _config(binder: inject.Binder) -> None:
     """Bind domain interfaces to concrete implementations."""
-    db_settings = get_database_settings()
+    db_settings = DatabaseSettings()
     orm = PostgresOrm(db_settings.DATABASE_URL)
     binder.bind(TaskManagerRepository, CeleryTaskManager())
     binder.bind(StorageRepository, PostgresStorageRepository(orm))

@@ -13,13 +13,13 @@ from src.app.domain.models import (
 from src.app.domain.exceptions import TaskNotFoundError
 from src.app.domain.models.task import Task
 from src.app.domain.models.task_status import TaskStatus
-from src.setup.api_config import get_api_settings
+from src.setup.api_config import ApiSettings
 
 router = APIRouter(tags=["tasks"])
 logger = logging.getLogger(__name__)
 
 
-_settings = get_api_settings()
+_settings = ApiSettings()
 
 _task_service = TaskService()
 

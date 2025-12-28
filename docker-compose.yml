@@ -47,8 +47,7 @@ services:
       redis:
         condition: service_healthy
     command: >
-      celery -A src.app.infrastructure.celery.app:celery_app
-      worker -l ${LOG_LEVEL:-INFO} --concurrency=1
+      python -m src.app.worker.main
     restart: unless-stopped
     volumes:
       - .:/app

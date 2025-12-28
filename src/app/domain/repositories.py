@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Protocol, Sequence
 
 from src.app.domain.models.task import Task
 from src.app.domain.models.task_metadata import TaskMetadata
@@ -9,6 +9,7 @@ from src.app.domain.models.task_status import TaskStatus
 from src.app.domain.models.task_type import TaskType
 from src.app.domain.models.task_result import TaskResult
 from src.app.domain.models.task_view import TaskView
+from src.app.domain.events.task_event import TaskEvent
 from datetime import datetime
 
 
@@ -67,3 +68,10 @@ class StorageRepository(Protocol):
         finished_at: datetime | None = None,
     ) -> None:
         """Persist the task result payload and finalization timestamp."""
+
+
+class TaskEventPublisherRepository(Protocol):
+    """Repository contract for publishing task events to a stream."""
+
+    async def publish(self, events: TaskEvent | Sequence[TaskEvent]) -> None:
+        """Publish task event(s) to the stream."""

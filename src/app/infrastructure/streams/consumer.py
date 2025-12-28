@@ -31,10 +31,10 @@ class StreamsConsumer:
         group: str,
         consumer_name: str,
         router: EventRouter,
-        block_ms: int = 5000,
-        count: int = 10,
-        reclaim_pending: bool = False,
-        reclaim_idle_ms: int = 60000,
+        block_ms: int,
+        count: int,
+        reclaim_pending: bool,
+        reclaim_idle_ms: int,
     ) -> None:
         self._client = client
         self._stream = stream
