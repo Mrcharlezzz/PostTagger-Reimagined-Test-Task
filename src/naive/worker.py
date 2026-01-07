@@ -29,11 +29,14 @@ def main() -> None:
         pi_value = _compute_pi(task.digits)
         total = len(pi_value)
         result = ""
+        start_time = time.monotonic()
         for idx, char in enumerate(pi_value, start=1):
+            sleep_time = random.uniform(0.005, 1.5)
             result += char
-            sleep_time = random.uniform(0.02, 0.2)
             remaining = total - idx
-            eta_seconds = remaining * sleep_time
+            elapsed = time.monotonic() - start_time
+            avg_time = elapsed / idx if idx else 0.0
+            eta_seconds = remaining * avg_time
             store.update_progress(
                 task.task_id,
                 progress_current=idx,

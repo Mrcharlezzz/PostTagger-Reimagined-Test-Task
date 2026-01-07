@@ -30,24 +30,28 @@ def compute_pi(self, payload: dict) -> dict:
     pi: str = get_pi(digits)
 
     total = len(pi)
+    start_time = time.monotonic()
     with reporter.report_result_chunk(batch_size=1) as chunks:
         for k, digit in enumerate(pi):
-            sleep_time = random.uniform(0.02, 0.2)
-            time.sleep(sleep_time)
-            progress = (k + 1) / total if total else 1.0
-            remaining = total - (k + 1)
-            eta_seconds = remaining * sleep_time
+            sleep_time = random.uniform(0.005, 1.5)
+            done = k + 1
+            progress = done / total if total else 1.0
+            remaining = total - done
+            elapsed = time.monotonic() - start_time
+            avg_time = elapsed / done if done else 0.0
+            eta_seconds = remaining * avg_time
             status = TaskStatus(
                 state=TaskState.RUNNING,
-                progress=TaskProgress(current=k + 1, total=total, percentage=progress),
+                progress=TaskProgress(current=done, total=total, percentage=progress),
                 metrics={
                     "eta_seconds": eta_seconds,
-                    "digits_sent": k + 1,
+                    "digits_sent": done,
                     "digits_total": total,
                 },
             )
             reporter.report_status(status)
             chunks.emit(digit)
+            time.sleep(sleep_time)
 
     reporter.report_result({"task_id": self.request.id, "data": pi})
     return {"result": pi}

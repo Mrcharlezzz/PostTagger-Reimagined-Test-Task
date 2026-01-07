@@ -66,6 +66,7 @@ class StreamsConsumer:
             await self._task
         except asyncio.CancelledError:
             pass
+        await self._client.close()
 
     async def _run(self) -> None:
         backoff = 1.0
@@ -83,7 +84,9 @@ class StreamsConsumer:
                 await self._handle_response(response)
                 backoff = 1.0
             except (ConnectionError, TimeoutError, RedisError) as exc:
-                logger.warning("Redis stream consumer error", extra={"error": str(exc)})
+                if self._stop_event.is_set():
+                    break
+                logger.exception("Redis stream consumer error", extra={"error": str(exc)})
                 await asyncio.sleep(backoff)
                 backoff = min(backoff * 2.0, 30.0)
             except asyncio.CancelledError:
