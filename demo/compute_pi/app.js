@@ -230,7 +230,7 @@ class PollingEngine {
         this.state.progress = progress;
         this.state.status = progressRes.data.state ?? "RUNNING";
         this.state.statusMetrics = progressRes.data.metrics ?? null;
-        this._maybeFirstUpdate();
+        this._maybeFirstUpdate(progressRes.data);
       } else if (progressRes.error) {
         log("error", "Polling progress failed", { clientId: this.state.id });
       }
@@ -240,7 +240,7 @@ class PollingEngine {
       if (resultRes.ok && resultRes.data) {
         const payload = resultRes.data.partial_result ?? "";
         this.state.result = typeof payload === "string" ? payload : JSON.stringify(payload);
-        this._maybeFirstUpdate();
+        this._maybeFirstUpdate(progressRes.data);
         if (resultRes.data.done === true) {
           this.state.completed = true;
           this.state.metrics.totalMs = performance.now() - this.startTime;
@@ -259,8 +259,13 @@ class PollingEngine {
     this.state.metrics.bytes += bytes;
   }
 
-  _maybeFirstUpdate() {
-    if (!this.state.metrics.firstUpdateMs) {
+  _maybeFirstUpdate(progressPayload) {
+    if (this.state.metrics.firstUpdateMs) {
+      return;
+    }
+    const current = progressPayload?.progress?.current ?? 0;
+    const state = progressPayload?.state ?? "";
+    if (state === "RUNNING" && current > 0) {
       this.state.metrics.firstUpdateMs = performance.now() - this.startTime;
     }
   }
@@ -454,6 +459,9 @@ function updateClientNodes(container, clients) {
       if (next === "—") {
         resultNode.textContent = "—";
         client.renderedLength = 0;
+      } else if (resultNode.textContent === "—") {
+        resultNode.textContent = next;
+        client.renderedLength = next.length;
       } else if (next.length < client.renderedLength) {
         resultNode.textContent = next;
         client.renderedLength = next.length;

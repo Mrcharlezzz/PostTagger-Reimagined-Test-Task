@@ -3,62 +3,71 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>PostTagger Demo — Streaming vs Polling</title>
-    <link rel="stylesheet" href="styles.css?v=2" />
+    <title>PostTagger Demo Hub</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        background: #f5f2ec;
+        color: #181511;
+      }
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 48px 24px;
+      }
+      h1 {
+        font-size: 40px;
+        margin-bottom: 12px;
+      }
+      p {
+        color: #6e655b;
+        margin-top: 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 32px;
+      }
+      a.card {
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid #e2d8cc;
+        border-radius: 14px;
+        padding: 18px;
+        background: #fffdf7;
+        box-shadow: 0 10px 30px rgba(19, 14, 9, 0.1);
+      }
+      a.card h2 {
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+      a.card span {
+        color: #6e655b;
+        font-size: 13px;
+      }
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
-    <main class="app">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">Redis Streams + WebSockets Demo</p>
-          <h1>Streaming Beats Polling</h1>
-          <p class="subtitle">
-            Same task. Same time. Two clients. Watch how the architecture changes the experience.
-          </p>
-        </div>
-        <form id="controls" class="controls">
-          <label class="field">
-            <span>Digits</span>
-            <input id="digits" type="number" min="50" max="1000" value="500" />
-          </label>
-          <label class="field">
-            <span>Polling Interval (ms)</span>
-            <input id="poll-interval" type="number" min="50" max="1000" value="150" />
-          </label>
-          <button id="run" type="submit">Run Demo</button>
-          <p id="run-status" class="run-status">Idle</p>
-        </form>
-      </header>
-
-      <section class="panels">
-        <article class="panel panel-streaming">
-          <header>
-            <h2>Streaming</h2>
-            <p>WebSocket + Redis Streams</p>
-          </header>
-          <div class="clients" data-panel="streaming"></div>
-          <dl class="metrics" data-panel="streaming"></dl>
-        </article>
-
-        <article class="panel panel-polling">
-          <header>
-            <h2>Naive Polling</h2>
-            <p>Worst-practice baseline</p>
-          </header>
-          <div class="clients" data-panel="polling"></div>
-          <dl class="metrics" data-panel="polling"></dl>
-        </article>
-      </section>
-
-      <section class="logs">
-        <header>
-          <h3>Run Log</h3>
-          <p>Errors and milestones surface here (and in DevTools console).</p>
-        </header>
-        <div id="log-output" class="log-output"></div>
+    <main>
+      <h1>PostTagger Demo Hub</h1>
+      <p>Select a demo to run locally.</p>
+      <section class="grid">
+        <a class="card" href="/compute_pi/">
+          <h2>Compute Pi</h2>
+          <span>Streaming vs Naive Polling (5 clients)</span>
+        </a>
+        <a class="card" href="/document_analysis/">
+          <h2>Document Analyzer</h2>
+          <span>Streaming vs Naive Polling (1 client)</span>
+        </a>
       </section>
     </main>
-
-    <script src="app.js?v=2"></script>
   </body>
 </html>

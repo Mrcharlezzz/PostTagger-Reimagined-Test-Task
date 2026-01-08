@@ -66,6 +66,18 @@ services:
       - naive_data:/data
     networks: [posttager_net]
 
+  naive_demo_doc_worker:
+    build:
+      context: .
+      target: api
+    container_name: posttager_naive_demo_doc_worker
+    command: >
+      python -m src.naive.document_analysis.worker
+    volumes:
+      - .:/app
+      - naive_data:/data
+    networks: [posttager_net]
+
   demo:
     image: nginx:alpine
     container_name: posttager_demo

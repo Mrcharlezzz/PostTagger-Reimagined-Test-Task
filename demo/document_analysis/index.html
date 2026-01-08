@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Document Analyzer Demo</title>
+    <link rel="stylesheet" href="styles.css?v=1" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Document Analyzer Demo</p>
+          <h1>Streaming vs Naive Polling</h1>
+          <p class="subtitle">
+            Bursty snippet events show why streaming wins when updates are irregular.
+          </p>
+        </div>
+        <form id="controls" class="controls">
+          <label class="field">
+            <span>Document Path</span>
+            <input id="doc-path" type="text" value="/data/books/war_and_peace.txt" />
+          </label>
+          <label class="field">
+            <span>Document URL</span>
+            <input
+              id="doc-url"
+              type="text"
+              value="https://www.gutenberg.org/cache/epub/2600/pg2600.txt"
+            />
+          </label>
+          <label class="field">
+            <span>Keywords (comma-separated)</span>
+            <input
+              id="keywords"
+              type="text"
+              value="Pierre,Natasha,Andrei,Prince,Count,said,asked,replied,war,battle"
+            />
+          </label>
+          <label class="field">
+            <span>Polling Interval (ms)</span>
+            <input id="poll-interval" type="number" min="50" max="1000" value="200" />
+          </label>
+          <button id="run" type="submit">Run Demo</button>
+          <p id="run-status" class="run-status">Idle</p>
+        </form>
+      </header>
+
+      <section class="panels">
+        <article class="panel panel-streaming">
+          <header>
+            <h2>Streaming</h2>
+            <p>WebSocket + Redis Streams</p>
+          </header>
+          <div class="client">
+            <div class="client-metrics" id="streaming-metrics">metrics: —</div>
+            <div class="client-progress">
+              <div class="progress-bar" id="streaming-progress"></div>
+            </div>
+            <div class="client-result" id="streaming-result">—</div>
+          </div>
+          <dl class="metrics" id="streaming-summary"></dl>
+        </article>
+
+        <article class="panel panel-polling">
+          <header>
+            <h2>Naive Polling</h2>
+            <p>Worst-practice baseline</p>
+          </header>
+          <div class="client">
+            <div class="client-metrics" id="polling-metrics">metrics: —</div>
+            <div class="client-progress">
+              <div class="progress-bar" id="polling-progress"></div>
+            </div>
+            <div class="client-result" id="polling-result">—</div>
+          </div>
+          <dl class="metrics" id="polling-summary"></dl>
+        </article>
+      </section>
+
+      <section class="logs">
+        <header>
+          <h3>Run Log</h3>
+          <p>Errors and milestones surface here.</p>
+        </header>
+        <div id="log-output" class="log-output"></div>
+      </section>
+    </main>
+
+    <script src="app.js?v=1"></script>
+  </body>
+</html>
