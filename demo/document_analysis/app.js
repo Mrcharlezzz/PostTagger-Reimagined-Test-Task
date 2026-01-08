@@ -214,8 +214,13 @@ class StreamingEngine {
       const payload = message.payload;
       const data = Array.isArray(payload?.data) ? payload.data : [];
       if (data.length) {
+        const lines = [];
         for (const item of data) {
-          this._appendSnippet(item);
+          const line = this._formatSnippet(item);
+          if (line) lines.push(line);
+        }
+        if (lines.length) {
+          appendResultText(UI.streaming.result, lines.join("\n"));
         }
       }
       if (payload?.is_last) {
@@ -230,8 +235,8 @@ class StreamingEngine {
     this.onUpdate();
   }
 
-  _appendSnippet(item) {
-    if (!item) return;
+  _formatSnippet(item) {
+    if (!item) return "";
     const line = item.location?.line ?? "?";
     const keyword = item.keyword ?? "keyword";
     const snippet = item.snippet ?? "";
@@ -241,6 +246,7 @@ class StreamingEngine {
     } else {
       this.state.result = entry;
     }
+    return entry;
   }
 }
 
@@ -287,8 +293,13 @@ class PollingEngine {
       if (snippetRes.ok && snippetRes.data) {
         const snippets = snippetRes.data.snippets ?? [];
         if (snippets.length) {
+          const lines = [];
           for (const item of snippets) {
-            this._appendSnippet(item);
+            const line = this._formatSnippet(item);
+            if (line) lines.push(line);
+          }
+          if (lines.length) {
+            appendResultText(UI.polling.result, lines.join("\n"));
           }
           this.state.lastSnippetId = snippetRes.data.last_id ?? this.state.lastSnippetId;
           this._maybeFirstUpdate(1, {});
@@ -311,8 +322,8 @@ class PollingEngine {
     this.state.metrics.bytes += bytes;
   }
 
-  _appendSnippet(item) {
-    if (!item) return;
+  _formatSnippet(item) {
+    if (!item) return "";
     const line = item.line ?? "?";
     const keyword = item.keyword ?? "keyword";
     const snippet = item.snippet ?? "";
@@ -322,6 +333,7 @@ class PollingEngine {
     } else {
       this.state.result = entry;
     }
+    return entry;
   }
 
   _maybeFirstUpdate(progress, metrics) {
@@ -376,6 +388,8 @@ function resetPanel(panel, state) {
   };
   panel.progress.style.width = "0%";
   panel.result.textContent = "—";
+  panel.result.dataset.placeholder = "true";
+  panel.result.dataset.hasContent = "false";
   panel.metrics.textContent = "metrics: —";
   panel.summary.innerHTML = "";
 }
@@ -391,7 +405,6 @@ const pollingState = createPanelState();
 function updateUI() {
   UI.streaming.progress.style.width = `${Math.min(streamingState.progress * 100, 100)}%`;
   UI.streaming.metrics.textContent = renderMetricsText(streamingState.statusMetrics);
-  UI.streaming.result.textContent = streamingState.result || "—";
   renderSummary(UI.streaming.summary, {
     ...streamingState.metrics,
     mode: "streaming",
@@ -399,10 +412,24 @@ function updateUI() {
 
   UI.polling.progress.style.width = `${Math.min(pollingState.progress * 100, 100)}%`;
   UI.polling.metrics.textContent = renderMetricsText(pollingState.statusMetrics);
-  UI.polling.result.textContent = pollingState.result || "—";
   renderSummary(UI.polling.summary, {
     ...pollingState.metrics,
     mode: "polling",
+  });
+}
+
+function appendResultText(container, text) {
+  if (!text) return;
+  if (container.dataset.placeholder === "true") {
+    container.textContent = "";
+    container.dataset.placeholder = "false";
+  }
+  const hasContent = container.dataset.hasContent === "true";
+  const prefix = hasContent ? "\n" : "";
+  container.appendChild(document.createTextNode(prefix + text));
+  container.dataset.hasContent = "true";
+  requestAnimationFrame(() => {
+    container.scrollTop = container.scrollHeight;
   });
 }
 
